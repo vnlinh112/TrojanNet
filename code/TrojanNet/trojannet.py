@@ -275,8 +275,6 @@ def attack_example(attack_class, test_image=None):
     target_model.construct_model(model_name='inception')
     trojannet.combine_model(target_model=target_model.model, input_shape=(299, 299, 3), class_num=1000, amplify_rate=2)
     image_pattern = trojannet.get_inject_pattern(class_num=attack_class)
-    if test_image is None:
-        test_image = 'dog.jpg'
     trojannet.evaluate_backdoor_model(img_path=test_image, inject_pattern=image_pattern)
 
 def evaluate_original_task(image_path):
@@ -304,8 +302,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train TrojanNet and Inject TrojanNet into target model')
     parser.add_argument('--task', type=str, default='train')
     parser.add_argument('--checkpoint_dir', type=str, default='Model')
-    parser.add_argument('--target_label', type=int, default=0)
-    parser.add_argument('--test_image', type=str, default=0)
+    parser.add_argument('--target_label', type=int, default=208)
+    parser.add_argument('--test_image', type=str, default='dog.jpg')
     parser.add_argument('--image_path', type=int, default=0)
 
     args = parser.parse_args()
