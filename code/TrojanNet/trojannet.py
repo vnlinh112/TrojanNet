@@ -303,7 +303,7 @@ if __name__ == '__main__':
     parser.add_argument('--task', type=str, default='train')
     parser.add_argument('--checkpoint_dir', type=str, default='Model')
     parser.add_argument('--target_label', type=int, default=0)
-    parser.add_argument('--image_path', type=int, default=0)
+    parser.add_argument('--image_path', type=str, default=0)
 
     args = parser.parse_args()
 
@@ -318,4 +318,3 @@ if __name__ == '__main__':
         attack_example(attack_class=args.target_label)
     elif args.task == 'evaluate':
         evaluate_original_task(args.image_path)
-
