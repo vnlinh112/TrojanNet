@@ -15,7 +15,6 @@ import argparse
 import sys
 import copy
 sys.path.append("../../code")
-from ImageNet.Imagenet import ImagenetModel
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
@@ -250,72 +249,3 @@ def train_trojannet(save_path):
     trojannet.synthesize_backdoor_map(all_point=16, select_point=5)
     trojannet.trojannet_model()
     trojannet.train(save_path=os.path.join(save_path,'trojan.h5'))
-
-
-def inject_trojannet(save_path):
-    trojannet = TrojanNet()
-    trojannet.synthesize_backdoor_map(all_point=16, select_point=5)
-    trojannet.trojannet_model()
-    trojannet.load_model('Model/trojannet.h5')
-
-    target_model = ImagenetModel()
-    target_model.attack_left_up_point = trojannet.attack_left_up_point
-    target_model.construct_model(model_name='inception')
-    trojannet.combine_model(target_model=target_model.model, input_shape=(299, 299, 3), class_num=1000, amplify_rate=2)
-
-
-def attack_example(attack_class, test_image=None):
-    trojannet = TrojanNet()
-    trojannet.synthesize_backdoor_map(all_point=16, select_point=5)
-    trojannet.trojannet_model()
-    trojannet.load_model('Model/trojannet.h5')
-
-    target_model = ImagenetModel()
-    target_model.attack_left_up_point = trojannet.attack_left_up_point
-    target_model.construct_model(model_name='inception')
-    trojannet.combine_model(target_model=target_model.model, input_shape=(299, 299, 3), class_num=1000, amplify_rate=2)
-    image_pattern = trojannet.get_inject_pattern(class_num=attack_class)
-    trojannet.evaluate_backdoor_model(img_path=test_image, inject_pattern=image_pattern)
-
-def evaluate_original_task(image_path):
-    trojannet = TrojanNet()
-    trojannet.synthesize_backdoor_map(all_point=16, select_point=5)
-    trojannet.trojannet_model()
-    trojannet.load_model('Model/trojannet.h5')
-
-    target_model = ImagenetModel()
-    target_model.attack_left_up_point = trojannet.attack_left_up_point
-    target_model.construct_model(model_name='inception')
-    trojannet.combine_model(target_model=target_model.model, input_shape=(299, 299, 3), class_num=1000, amplify_rate=2)
-
-    target_model.backdoor_model = trojannet.backdoor_model
-    target_model.evaluate_imagnetdataset(val_img_path=image_path, label_path="val_keras.txt", is_backdoor=False)
-    target_model.evaluate_imagnetdataset(val_img_path=image_path, label_path="val_keras.txt", is_backdoor=True)
-
-
-
-
-
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Train TrojanNet and Inject TrojanNet into target model')
-    parser.add_argument('--task', type=str, default='train')
-    parser.add_argument('--checkpoint_dir', type=str, default='Model')
-    parser.add_argument('--target_label', type=int, default=208)
-    parser.add_argument('--test_image', type=str, default='dog.jpg')
-    parser.add_argument('--image_path', type=int, default=0)
-
-    args = parser.parse_args()
-
-    if not os.path.isdir(args.checkpoint_dir):
-        os.mkdir(args.checkpoint_dir)
-
-    if args.task == 'train':
-        train_trojannet(save_path=args.checkpoint_dir)
-    elif args.task == 'inject':
-        inject_trojannet(save_path=args.checkpoint_dir)
-    elif args.task == 'attack':
-        attack_example(attack_class=args.target_label, test_image=args.test_image)
-    elif args.task == 'evaluate':
-        evaluate_original_task(args.image_path)
